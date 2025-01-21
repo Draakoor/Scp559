@@ -15,10 +15,10 @@ You can find all the RoomTypes in the EXILED discord.
 To get the local positions, with a plugin you need to do `Room.Get(YourRoomType).GameObject.transform.TransformPoint(x, y, z);`
 Or just use the tool I left inside the plugin with a command called roompoint.  
 Example:  
-`spawn_points:
-      Lcz330:
-        x: 135.802
-        y: 1.278857
+`spawn_points:  
+      Lcz330:  
+        x: 135.802  
+        y: 1.278857  
         z: 62.9407`  
 
 ## Default Model Preview
