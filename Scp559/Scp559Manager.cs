@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using AdvancedHints;
 using Exiled.API.Enums;
 using Exiled.API.Extensions;
 using Exiled.API.Features;
@@ -123,7 +122,7 @@ public class Scp559Manager
             {
                 if (_cakeModel is not null && !player.IsScp && Vector3.Distance(player.Position, _cakeModel.Position) <= 2.5f)
                 {
-                    player.ShowManagedHint(_entryPoint.Config.CakeConfig.SlicePickupHint, 1.1f);
+                    player.ShowHint(_entryPoint.Config.CakeConfig.SlicePickupHint, 1.1f);
                 }
             }
 
