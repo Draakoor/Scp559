@@ -5,7 +5,6 @@ Remember the funny cake that makes the people small and change the players voice
 ## Install Instructions
 - Download EXILED (https://github.com/ExMod-Team/EXILED).
 - Install MapEditorReborn (https://discord.com/channels/947849283514814486/995694845903524002)
-- Install Advanced Hints (https://github.com/moddedmcplayer/AdvancedHints)
 - Download and install the plugin with the default schematic provided in the Release or create your own.
 - Place the schematic in the MapEditorReborn schematics folder.
 
