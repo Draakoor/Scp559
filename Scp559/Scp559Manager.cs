@@ -100,7 +100,7 @@ public class Scp559Manager
 
             yield return Timing.WaitForSeconds(5f);
             
-            _cakeModel = ObjectSpawner.SpawnSchematic(_entryPoint.Config.CakeConfig.SchematicName, room.WorldPosition(spawnPoint), null, null, MapUtils.GetSchematicDataByName(_entryPoint.Config.CakeConfig.SchematicName), false);
+            _cakeModel = ObjectSpawner.SpawnSchematic(_entryPoint.Config.CakeConfig.SchematicName, room.WorldPosition(spawnPoint), null, null, MapUtils.GetSchematicDataByName(_entryPoint.Config.CakeConfig.SchematicName));
 
             yield return Timing.WaitForSeconds(_entryPoint.Config.CakeConfig.DisappearDelay);
             

@@ -7,15 +7,15 @@ namespace Scp559;
 // ReSharper disable ClassNeverInstantiated.Global
 public class EntryPoint : Plugin<Config>
 {
-    public override string Author { get; } = "xNexusACS";
+    public override string Author { get; } = "Draakoor";
 
     public override string Name { get; } = "SCP-559";
 
     public override string Prefix { get; } = "scp_559";
 
-    public override Version Version { get; } = new(0, 0, 3);
+    public override Version Version { get; } = new(1, 1, 0);
 
-    public override Version RequiredExiledVersion { get; } = new(8, 9, 6);
+    public override Version RequiredExiledVersion { get; } = new(9, 0, 0);
 
     internal static EntryPoint Instance;
 
