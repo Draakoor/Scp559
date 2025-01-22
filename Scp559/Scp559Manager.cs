@@ -74,6 +74,7 @@ public class Scp559Manager
 
     internal void OnRoundStart()
     {
+        Debug.Log("roundstart for scp559 detected");
         Timing.RunCoroutine(CakeSpawnHandler());
         Timing.RunCoroutine(SlicePickupIndicator());
     }
@@ -89,25 +90,30 @@ public class Scp559Manager
     private IEnumerator<float> CakeSpawnHandler()
     {
         yield return Timing.WaitForSeconds(_entryPoint.Config.CakeConfig.FirstCakeSpawnDelay);
-
+        Debug.Log("spawning cake in "+ _entryPoint.Config.CakeConfig.FirstCakeSpawnDelay+" seconds");
         while (true)
         {
             if (Round.IsEnded)
                 yield break;
 
-            Room room = GetRandomRoom();
+            Room room = Room.Get(GetRandomRoom());
             Vector3 spawnPoint = _entryPoint.Config.CakeConfig.SpawnPoints[room.Type] + Vector3.down * 1.8f;
 
             yield return Timing.WaitForSeconds(5f);
             
             _cakeModel = ObjectSpawner.SpawnSchematic(_entryPoint.Config.CakeConfig.SchematicName, room.WorldPosition(spawnPoint), null, null, MapUtils.GetSchematicDataByName(_entryPoint.Config.CakeConfig.SchematicName));
+            Debug.Log("cake spawned in:" +_cakeModel.Position + _cakeModel.CurrentRoom);
+            ServerConsole.AddLog("cake spawned in:" + _cakeModel.Position + _cakeModel.CurrentRoom);
 
             yield return Timing.WaitForSeconds(_entryPoint.Config.CakeConfig.DisappearDelay);
             
             _cakeModel.Destroy();
             _cakeModel = null;
 
+            ServerConsole.AddLog("cake despawned");
+
             yield return Timing.WaitForSeconds(_entryPoint.Config.CakeConfig.NormalSpawnDelay);
+            Debug.Log("cake respawning");
         }
     }
     
@@ -130,6 +136,14 @@ public class Scp559Manager
         }
     }
 
-    private Room GetRandomRoom() =>
-        Player.List.GetRandomValue(t => t.IsHuman && t.CurrentRoom != null && _entryPoint.Config.CakeConfig.SpawnPoints.Keys.Contains(t.CurrentRoom.Type))?.CurrentRoom;
+    private RoomType GetRandomRoom()
+    {
+        Random random = new Random();
+
+        List<RoomType> roomNames = _entryPoint.Config.CakeConfig.SpawnPoints.Keys.ToList();
+
+        int index = random.Next(roomNames.Count);
+
+        return roomNames[index];
+    }
 }
