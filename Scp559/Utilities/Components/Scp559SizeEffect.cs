@@ -12,6 +12,7 @@ public class Scp559SizeEffect : MonoBehaviour
     
     private void Update()
     {
+        if (_player == null || !_player.IsConnected || !_player.IsAlive) { Destroy(this); return; }
         if (!(_player.Scale.y > EntryPoint.Instance.Config.CakeConfig.PlayerScaleUnderCakeEffect.y)) return;
         
         _player.EnableEffect(EffectType.Ensnared, duration: 1f);
@@ -20,8 +21,12 @@ public class Scp559SizeEffect : MonoBehaviour
         if (!(_player.Scale.y < EntryPoint.Instance.Config.CakeConfig.PlayerScaleUnderCakeEffect.y)) return;
         
         _player.Scale = EntryPoint.Instance.Config.CakeConfig.PlayerScaleUnderCakeEffect;
-        Destroy(this);
+        // Keep the component while affected so SCP-500 and voice processing can identify it.
     }
 
-    private void OnDestroy() => _player = null;
+    private void OnDestroy()
+    {
+        if (_player != null) Scp559.Utilities.Voice.VoicePitchUtilities.Forget(_player.ReferenceHub);
+        _player = null;
+    }
 }

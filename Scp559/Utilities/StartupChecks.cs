@@ -13,7 +13,7 @@ public static class StartupChecks
 {
     public static bool CheckForMapEditorReborn()
     {
-        return File.Exists(Path.Combine(Paths.Plugins, "MapEditorReborn.dll"));
+        return AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "ProjectMER");
     }
 
     private static bool IsJadeLibInstalled()

@@ -25,3 +25,8 @@ spawn_points:
 ![image](https://github.com/user-attachments/assets/fef04287-f8fc-4b56-94a6-3759fe68dd63)  
 
 Thanks to [xNexusACS](https://github.com/xNexusACS/SCP-559) and [Kyle's Projekt](https://github.com/Kyle-s-Project/SCP-559) for the original/edited source.
+
+
+## 2.0.0 compatibility update
+
+Updated for SCP:SL 14.2.7 / EXILED 9.14.2 / ProjectMER 2026.7.6.1. See [BUILD.md](BUILD.md) for reproducible build and installation steps.

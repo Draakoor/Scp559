@@ -24,7 +24,7 @@ public class CakeConfig
     public string SchematicName { get; set; } = "SCP559";
     
     [Description("The Hint to show to the players near the Cake")]
-    public string SlicePickupHint { get; set; } = string.Empty;
+    public string SlicePickupHint { get; set; } = "SCP-559 / Press the noclip key to eat a slice";
     
     [Description("The Pitch to Apply when the player is under the SCP-559 effect")]
     public float VoicePitch { get; set; } = 1.5f;
@@ -42,5 +42,5 @@ public class CakeConfig
     public Vector3 PlayerScaleUnderCakeEffect { get; set; } = new(0.6f, 0.6f, 0.6f);
     
     [Description("The Places and positions where the cake can spawn")]
-    public Dictionary<RoomType, Vector3> SpawnPoints { get; set; } = new();
+    public Dictionary<RoomType, Vector3> SpawnPoints { get; set; } = new() { [RoomType.Lcz330] = new Vector3(0, 1, 0), [RoomType.LczClassDSpawn] = new Vector3(0, 1, 0) };
 }

@@ -12,6 +12,7 @@ public class Scp559RestoreEffect : MonoBehaviour
     
     private void Update()
     {
+        if (_player == null || !_player.IsConnected || !_player.IsAlive) { Destroy(this); return; }
         _player.EnableEffect(EffectType.Ensnared, duration: 1f);
         _player.Scale += new Vector3(0.1f, 0.1f, 0.1f) * Time.deltaTime;
             

@@ -13,9 +13,9 @@ public class EntryPoint : Plugin<Config>
 
     public override string Prefix { get; } = "scp_559";
 
-    public override Version Version { get; } = new(1, 2, 0);
+    public override Version Version { get; } = new(2, 0, 0);
 
-    public override Version RequiredExiledVersion { get; } = new(9, 0, 0);
+    public override Version RequiredExiledVersion { get; } = new(9, 14, 2);
 
     internal static EntryPoint Instance;
 
@@ -25,7 +25,7 @@ public class EntryPoint : Plugin<Config>
     {
         if (!StartupChecks.CheckForMapEditorReborn())
         {
-            Log.Error("MapEditorReborn is missing!, aborting plugin startup.");
+            Log.Error("ProjectMER is missing!, aborting plugin startup.");
             return;
         }
 
@@ -36,8 +36,9 @@ public class EntryPoint : Plugin<Config>
         Exiled.Events.Handlers.Player.TogglingNoClip += _scp559Manager.OnToggleNoClip;
         Exiled.Events.Handlers.Player.VoiceChatting += _scp559Manager.OnVoiceChatting;
         Exiled.Events.Handlers.Player.Dying += _scp559Manager.OnDying;
+        Exiled.Events.Handlers.Player.ChangingRole += _scp559Manager.OnChangingRole;
         Exiled.Events.Handlers.Server.RoundStarted += _scp559Manager.OnRoundStart;
-        Exiled.Events.Handlers.Server.EndingRound += _scp559Manager.OnEndingRound;
+        Exiled.Events.Handlers.Server.RoundEnded += _scp559Manager.OnEndingRound;
         
         // Internal
         Exiled.Events.Handlers.Server.WaitingForPlayers += OnWaitingForPlayers;
@@ -49,18 +50,21 @@ public class EntryPoint : Plugin<Config>
     {
         // Internal
         Exiled.Events.Handlers.Server.WaitingForPlayers -= OnWaitingForPlayers;
+        if (_scp559Manager == null) { base.OnDisabled(); return; }
+        _scp559Manager.Cleanup();
         
         Exiled.Events.Handlers.Player.UsedItem -= _scp559Manager.OnUsedItem;
         Exiled.Events.Handlers.Player.TogglingNoClip -= _scp559Manager.OnToggleNoClip;
         Exiled.Events.Handlers.Player.VoiceChatting -= _scp559Manager.OnVoiceChatting;
         Exiled.Events.Handlers.Player.Dying -= _scp559Manager.OnDying;
+        Exiled.Events.Handlers.Player.ChangingRole -= _scp559Manager.OnChangingRole;
         Exiled.Events.Handlers.Server.RoundStarted -= _scp559Manager.OnRoundStart;
-        Exiled.Events.Handlers.Server.EndingRound -= _scp559Manager.OnEndingRound;
+        Exiled.Events.Handlers.Server.RoundEnded -= _scp559Manager.OnEndingRound;
 
         _scp559Manager = null;
         Instance = null;
         base.OnDisabled();
     }
 
-    private static void OnWaitingForPlayers() => StartupChecks.UnRegisterIncompatibilities();
+    private void OnWaitingForPlayers() { _scp559Manager?.Cleanup(); StartupChecks.UnRegisterIncompatibilities(); }
 }

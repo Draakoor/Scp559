@@ -5,8 +5,8 @@ using Exiled.API.Extensions;
 using Exiled.API.Features;
 using Exiled.Events.EventArgs.Player;
 using Exiled.Events.EventArgs.Server;
-using MapEditorReborn.API.Features;
-using MapEditorReborn.API.Features.Objects;
+using ProjectMER.Features;
+using ProjectMER.Features.Objects;
 using MEC;
 using Scp559.Utilities.Components;
 using Scp559.Utilities.Voice;
@@ -21,7 +21,8 @@ public class Scp559Manager
     
     public Scp559Manager(EntryPoint entryPoint) => _entryPoint = entryPoint;
 
-    private MapEditorObject _cakeModel;
+    private SchematicObject _cakeModel;
+    private CoroutineHandle _spawnRoutine, _hintRoutine;
 
     internal void OnUsedItem(UsedItemEventArgs args)
     {
@@ -60,7 +61,7 @@ public class Scp559Manager
         if (!args.Player.GameObject.TryGetComponent(out Scp559SizeEffect _))
             return;
 
-        args.VoiceMessage = VoicePitchUtilities.SetVoicePitch(args.VoiceMessage);
+        args.VoiceMessage = VoicePitchUtilities.SetVoicePitch(args.Player.ReferenceHub, args.VoiceMessage);
     }
 
     internal void OnDying(DyingEventArgs args)
@@ -75,16 +76,38 @@ public class Scp559Manager
     internal void OnRoundStart()
     {
         Debug.Log("roundstart for scp559 detected");
-        Timing.RunCoroutine(CakeSpawnHandler());
-        Timing.RunCoroutine(SlicePickupIndicator());
+        Cleanup();
+        _spawnRoutine = Timing.RunCoroutine(CakeSpawnHandler());
+        _hintRoutine = Timing.RunCoroutine(SlicePickupIndicator());
     }
 
-    internal void OnEndingRound(EndingRoundEventArgs _)
+    internal void OnEndingRound(RoundEndedEventArgs ev) { Cleanup(); }
+
+    internal void OnChangingRole(ChangingRoleEventArgs ev)
     {
-        if (_cakeModel is null)
-            return;
-        
+        if (!ev.IsAllowed) return;
+        var effect = ev.Player.GameObject.GetComponent<Scp559SizeEffect>();
+        var restore = ev.Player.GameObject.GetComponent<Scp559RestoreEffect>();
+        if (effect == null && restore == null) return;
+        if (effect != null) Object.Destroy(effect);
+        if (restore != null) Object.Destroy(restore);
+        ev.Player.Scale = Vector3.one;
+    }
+
+    internal void Cleanup()
+    {
+        Timing.KillCoroutines(_spawnRoutine, _hintRoutine);
+        if (_cakeModel != null) _cakeModel.Destroy();
         _cakeModel = null;
+        foreach (var player in Player.List)
+        {
+            var effect = player.GameObject.GetComponent<Scp559SizeEffect>();
+            var restore = player.GameObject.GetComponent<Scp559RestoreEffect>();
+            if (effect == null && restore == null) continue;
+            if (effect != null) Object.Destroy(effect);
+            if (restore != null) Object.Destroy(restore);
+            player.Scale = Vector3.one;
+        }
     }
 
     private IEnumerator<float> CakeSpawnHandler()
@@ -96,18 +119,19 @@ public class Scp559Manager
             if (Round.IsEnded)
                 yield break;
 
-            Room room = Room.Get(GetRandomRoom());
-            Vector3 spawnPoint = _entryPoint.Config.CakeConfig.SpawnPoints[room.Type] + Vector3.down * 1.8f;
-
-            yield return Timing.WaitForSeconds(5f);
-            
-            _cakeModel = ObjectSpawner.SpawnSchematic(_entryPoint.Config.CakeConfig.SchematicName, room.WorldPosition(spawnPoint), null, null, MapUtils.GetSchematicDataByName(_entryPoint.Config.CakeConfig.SchematicName));
-            Debug.Log("cake spawned in:" +_cakeModel.Position + _cakeModel.CurrentRoom);
-            ServerConsole.AddLog("cake spawned in:" + _cakeModel.Position + _cakeModel.CurrentRoom);
+            var rooms = Room.List.Where(r => _entryPoint.Config.CakeConfig.SpawnPoints.ContainsKey(r.Type)).ToArray();
+            if (rooms.Length == 0) { Log.Warn("SCP-559: no configured room exists in this map."); yield break; }
+            Room room = rooms[UnityEngine.Random.Range(0, rooms.Length)];
+            Vector3 spawnPoint = room.WorldPosition(_entryPoint.Config.CakeConfig.SpawnPoints[room.Type]);
+            if (Physics.Raycast(spawnPoint + Vector3.up * 2, Vector3.down, out var ground, 6, PlayerRoles.FirstPersonControl.FpcStateProcessor.Mask))
+                spawnPoint.y = ground.point.y;
+            if (!ObjectSpawner.TrySpawnSchematic(_entryPoint.Config.CakeConfig.SchematicName, spawnPoint, out _cakeModel))
+            { Log.Error("SCP-559: ProjectMER schematic missing: " + _entryPoint.Config.CakeConfig.SchematicName); yield break; }
+            Log.Info("SCP-559 spawned in " + room.Type + " at " + _cakeModel.Position);
 
             yield return Timing.WaitForSeconds(_entryPoint.Config.CakeConfig.DisappearDelay);
             
-            _cakeModel.Destroy();
+            if (_cakeModel != null) _cakeModel.Destroy();
             _cakeModel = null;
 
             ServerConsole.AddLog("cake despawned");
@@ -126,7 +150,7 @@ public class Scp559Manager
 
             foreach (Player player in Player.List)
             {
-                if (_cakeModel is not null && !player.IsScp && Vector3.Distance(player.Position, _cakeModel.Position) <= 2.5f)
+                if (_cakeModel is not null && player.IsHuman && !player.IsNPC && !string.IsNullOrWhiteSpace(_entryPoint.Config.CakeConfig.SlicePickupHint) && Vector3.Distance(player.Position, _cakeModel.Position) <= 2.5f)
                 {
                     player.ShowHint(_entryPoint.Config.CakeConfig.SlicePickupHint, 1.1f);
                 }
